@@ -1,8 +1,11 @@
 import { Translation } from './translation.js';
 import { Menu } from './menu.js';
+import { Service } from './service.js';
+import { languages } from './constants.js'
 
-const t = new Translation();
-t.init();
-t.initPassTranslationEventListener();
+(new Translation({
+    defaultLanguage: languages.russian,
+    service: new Service()
+})).init();
 
-const menu = new Menu(t);
+Menu.init();
