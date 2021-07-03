@@ -1,38 +1,35 @@
-const translations = {
-    en: {
-        table: "table"
-    },
-    ru: {
-        table: "стол"
-    },
-    it: {
-        table: "tavolo"
+import { translations, customEvents } from './constants.js';
+
+const getElementsToTranslate = () => {
+    return document.querySelectorAll("[data-key]");
+}
+
+const getKeyToTranslate = (element) => {
+    return element.dataset["key"]
+}
+
+function Translation({ defaultLanguage, service }) {
+    this.service = service;
+    if (!this.service.language.get()) {
+        this.service.language.set(defaultLanguage);
     }
 }
 
-function Translation() {
-    if (!localStorage.getItem('language')) {
-        localStorage.setItem('language', "RU");
-    }
-}
-
-Translation.prototype.translate = function (key) {
-    const language = localStorage.getItem('language');
-    return translations[language.toLowerCase()][key];
+Translation.prototype.translateAllElements = function () {
+    const elementsToTranslate = getElementsToTranslate();
+    const currentLanguageTranslations = translations[this.service.language.get()];
+    Array.from(elementsToTranslate).forEach(element => {
+        const elementKey = getKeyToTranslate(element);
+        element.innerHTML = currentLanguageTranslations[elementKey];
+    })
 }
 
 Translation.prototype.init = function () {
-    Array.from(document.querySelectorAll("div[data-key]")).forEach(element => {
-        element.innerHTML = this.translate(element.dataset['key']);
+    window.addEventListener(customEvents.passTranslation, ({ detail: language }) => {
+        this.service.language.set(language);
+        this.translateAllElements();
     })
-}
-
-Translation.prototype.initPassTranslationEventListener = function () {
-    window.addEventListener("passTranslation", ({ detail }) => {
-        const language = detail;
-        localStorage.setItem('language', detail);
-        this.init();
-    })
+    this.translateAllElements();
 }
 
 export { Translation };
